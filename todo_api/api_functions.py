@@ -3,20 +3,19 @@ import os
 from datetime import datetime
 from typing import List
 from models import Task, TaskCreate
-
-DATA_FILE = "data.json"
+from config import Config
 
 class ApiFunctions:
 
     def load_tasks() -> List[Task]:
-        if not os.path.exists(DATA_FILE):
+        if not os.path.exists(Config.DATA_FILE):
             return []
-        with open(DATA_FILE, "r") as file:
+        with open(Config.DATA_FILE, "r") as file:
             return [Task(**task) for task in json.load(file)]
 
 
     def save_tasks(tasks: List[Task]):
-        with open(DATA_FILE, "w") as file:
+        with open(Config.DATA_FILE, "w") as file:
             json.dump([task.dict() for task in tasks], file, indent=4)
 
 
@@ -32,7 +31,7 @@ class ApiFunctions:
             id=str(ApiFunctions.get_next_id(tasks)),
             title=task_data.title,
             description=task_data.description,
-            created_at=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            created_at=datetime.utcnow().strftime(Config.DATE_FORMATE),
             is_done=False
         )
         tasks.append(new_task)

@@ -1,98 +1,89 @@
 import requests
 from collections import defaultdict
-
-API_URL = "http://127.0.0.1:8000"
+from config import Config
 
 def show_menu():
-    print("""\n ===== TODO List CLI =====
-1. View all tasks
-2. View done tasks
-3. View not done tasks
-4. Add a task
-5. Mark a task as done
-6. Delete a task
-7. Exit 
-""")
+    print(Config.MENU)
     
 
 def view_tasks(filter_by=None):
-    response = requests.get(f"{API_URL}/tasks")
+    response = requests.get(f"{Config.API_URL}/tasks")
     if response.status_code == 200:
         tasks = response.json()
         grouped_tasks = defaultdict(list)
 
-        if filter_by == "done":
-            tasks = [task for task in tasks if task["is_done"]]
-        elif filter_by == "not_done":
-            tasks = [task for task in tasks if not task["is_done"]]
+        if filter_by == Config.DONE :
+            tasks = [task for task in tasks if task[Config.IS_DONE]]
+        elif filter_by == Config.NOT_DONE :
+            tasks = [task for task in tasks if not task[Config.IS_DONE]]
 
         if not tasks:
-            print("\nNo tasks found")
+            print(Config.NO_TASK_FOUND)
             return
         
         for task in tasks:
-            created_at = task["created_at"]
+            created_at = task[Config.CREATED_AT]
             date_part = created_at.split(" ")[0].strip()
             grouped_tasks[date_part].append(task)
 
         for date, tasks_on_date in grouped_tasks.items():
-            print(f"\n===== Tasks added on {date} =====")
+            print(f"\n {Config.TASK_ADDED} {date} ")
             for task in tasks_on_date:
-                status = "Done" if task["is_done"] else "Not Done"
-                print(f"\nID: {task["id"]}\nTitle: {task["title"]}\nDesc: {task["description"]}\nStatus: {status}\nCreated At: {task["created_at"]}\n")
+                status = Config.DONE if task[Config.IS_DONE] else Config.NOT_DONE
+                print(f"\nID: {task["id"]}\nTitle: {task["title"]}\nDesc: {task["description"]}\nStatus: {status}\nCreated At: {task[Config.CREATED_AT]}\n")
 
     else:
-        print("Error fetching tasks!")
+        print(Config.ERROR_FETCHING)
 
 
 def add_task():
-    title = input("Enter task title: ")
-    description = input("Enter task description: ")
+    title = input(Config.ENTER_TITLE)
+    description = input(Config.ENTER_DESC)
     data = {
         "title": title,
         "description": description
     }
-    response = requests.post(f"{API_URL}/tasks", json=data)
+    response = requests.post(f"{Config.API_URL}/tasks", json=data)
     if response.status_code == 200:
-        print("Task added successfully!")
+        print(Config.TASK_ADDED)
     else:
-        print("Failed to add task!")
+        print(Config.FAILED_ADD_TASK)
 
 
 def mark_done():
-    task_id = input("Enter task ID to mark as done: ")
-    response =  requests.put(f"{API_URL}/tasks/{task_id}/done")
+    task_id = input(Config.ENTER_ID_TO_MARK_DONE)
+    response =  requests.put(f"{Config.API_URL}/tasks/{task_id}/done")
     if response.status_code == 200:
-        print("Task marked as done")
+        print(Config.TASK_MARKED_DONE)
     else:
-        print("Task not found")
+        print(Config.TASK_NOT_FOUND)
 
 
 def delete_task():
-    task_id = input("Enter task Id to delete: ")
-    confirm = input(f"Are you sure you want to delete task {task_id}? (y/n): ").lower()
+    task_id = input(Config.ENTER_ID_TO_DELETE)
+    confirm = input(f"{Config.SURE_DELETE} {task_id} {Config.Y_N}").lower()
     if confirm != "y":
-        print("Deletion cancelled")
+        print(Config.CANCELLED)
         return
     
-    response = requests.delete(f"{API_URL}/tasks/{task_id}")
+    response = requests.delete(f"{Config.API_URL}/tasks/{task_id}")
     if response.status_code == 200:
-        print("task deleted successfully")
+        print(Config.TASK_DELETED)
     else:
-        print("Task not found or could not be deleted")
+        print(Config.TASK_NOT_FOUND_OR_DELETED)
 
 
 def main():
     while True:
         show_menu()
-        choice = input("Enter your choice: ").strip()
+        choice = input(Config.ENTER_CHOICE).strip()
 
         if choice == "1":
             view_tasks()
         elif choice == "2":
-            view_tasks(filter_by="done")
+            view_tasks(filter_by=Config.DONE)
         elif choice == "3":
-            view_tasks(filter_by="not_done")
+            view_tasks(filter_by=Config.NOT_DONE)
         elif choice == "4":
             add_task()
         elif choice == "5":
@@ -100,10 +91,10 @@ def main():
         elif choice == "6":
             delete_task()
         elif choice == "7":
-            print("Exiting...")
+            print(Config.EXIT)
             break
         else:
-            print("Invalid choice! Please try again ")
+            print(Config.INVALID_CHOICE)
 
 
 if __name__ == "__main__":
